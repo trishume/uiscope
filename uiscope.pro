@@ -17,9 +17,13 @@ SOURCES += main.cpp\
         debugwindow.cpp
 
 HEADERS  += debugwindow.h \
-    accessibilityproxy.h
+    accessibilityproxy.h \
+    UIElementUtilities.h
 
 FORMS    += debugwindow.ui
 
 OBJECTIVE_SOURCES += \
-    accessibilityproxy.mm
+    accessibilityproxy.mm \
+    UIElementUtilities.mm
+
+OTHER_FILES +=
