@@ -47,6 +47,22 @@ static id getProperty(AXUIElementRef win, NSString* propType, id defaultValue) {
     return defaultValue;
 }
 
+static NSArray *getChildren(AXUIElementRef el) {
+//    CFIndex count;
+//    if(AXUIElementGetAttributeValueCount(uiElement, NSAccessibilityChildrenAttribute, &count) != kAXErrorSuccess) return;
+    NSArray *children;
+    if(AXUIElementCopyAttributeValues (el, (CFStringRef)NSAccessibilityChildrenAttribute, 0, 100, (CFArrayRef *)&children) != kAXErrorSuccess) return [NSArray array];
+    return children;
+}
+
+static void walkTree(AXUIElementRef el) {
+    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:el] UTF8String];
+    NSArray *children = getChildren(el);
+    for(id el in children) {
+        walkTree((AXUIElementRef)el);
+    }
+}
+
 AccessibilityProxy::AccessibilityProxy(QObject *parent) :
     QObject(parent)
 {
@@ -60,4 +76,5 @@ void AccessibilityProxy::testStuff() {
     qDebug() << [title UTF8String];
     NSString *descript = [UIElementUtilities descriptionForUIElement:win attribute:NSAccessibilityChildrenAttribute beingVerbose:YES];
     qDebug() << [descript UTF8String];
+    walkTree(win);
 }
