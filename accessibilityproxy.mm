@@ -62,7 +62,7 @@ AccessibilityProxy::AccessibilityProxy(QObject *parent) :
 }
 
 void AccessibilityProxy::update() {
-    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:sysEl] UTF8String];
+//    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:sysEl] UTF8String];
     AXUIElementRef win = getFocusedWin();
     if(win == 0) qDebug() << "derp no window";
 

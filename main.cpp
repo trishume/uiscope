@@ -37,7 +37,7 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
          abort();
          break;
    }
-   printf(txt.toLatin1().data());
+   printf("%s",txt.toLatin1().data());
 
    QFile outFile("/Users/tristan/misc/uiscope.log");
    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    qInstallMessageHandler(customMessageHandler);
+//    qInstallMessageHandler(customMessageHandler);
 
     AccessibilityProxy prox;
     qDBusRegisterMetaType<QRect>();
