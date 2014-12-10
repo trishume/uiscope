@@ -20,8 +20,12 @@ public slots:
     void update();
 
 protected:
+    QRect getRect(AXUIElementRef el);
     void walkTree(AXUIElementRef el);
-    void touch(AXUIElementRef el);
+    bool shouldTouch(AXUIElementRef el);
+    void touch(AXUIElementRef el, const QRect &rect);
+    
+    QList <QRect> frameStack;
 };
 
 #endif // ACCESSIBILITYPROXY_H

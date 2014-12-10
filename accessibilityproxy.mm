@@ -59,6 +59,7 @@ AccessibilityProxy::AccessibilityProxy(QObject *parent) :
     QObject(parent), curRects()
 {
     initAccessibility();
+    frameStack.push_back(QRect(0,0,1920,1080));
 }
 
 void AccessibilityProxy::update() {
@@ -75,26 +76,45 @@ void AccessibilityProxy::update() {
     emit newRects(curRects);
 }
 
-void AccessibilityProxy::walkTree(AXUIElementRef el) {
-    touch(el);
-
-    NSArray *children = getChildren(el);
-    for(id el in children) {
-        walkTree((AXUIElementRef)el);
-    }
-}
-
-void AccessibilityProxy::touch(AXUIElementRef el) {
-    // Discard non-interactive items
-    NSArray *actions = [UIElementUtilities actionNamesOfUIElement:el];
-    if(!actions || ![actions containsObject:@"AXPress"]) return;
-
-//    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:el] UTF8String];
-
+QRect AccessibilityProxy::getRect(AXUIElementRef el) {
     id rectVal = [UIElementUtilities valueOfAttribute:@"AXFrame" ofUIElement:el];
     if(rectVal) {
         CGRect rect;
         AXValueGetValue((AXValueRef)rectVal, kAXValueCGRectType, &rect);
-        curRects << QRect(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+        return QRect(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
     }
+    return QRect();
+}
+
+void AccessibilityProxy::walkTree(AXUIElementRef el) {
+    // Check to see that this is actually on the screen
+    QRect outerFrame = frameStack.last();
+    QRect frame = getRect(el).intersected(outerFrame);
+    if (frame.isNull()) {
+        return;
+    }
+    
+    touch(el, frame);
+    
+    frameStack.push_back(frame);
+    NSArray *children = getChildren(el);
+    for(id el in children) {
+        walkTree((AXUIElementRef)el);
+    }
+    frameStack.pop_back();
+}
+
+bool AccessibilityProxy::shouldTouch(AXUIElementRef el) {
+    NSArray *actions = [UIElementUtilities actionNamesOfUIElement:el];
+    if(actions && [actions containsObject:@"AXPress"]) return true;
+    NSString *role = getProperty(el, NSAccessibilityRoleAttribute, @"");
+    if([role isEqualToString:@"AXTextField"] || [role isEqualToString:@"AXRow"]) return true;
+    return false;
+}
+
+void AccessibilityProxy::touch(AXUIElementRef el, const QRect &rect) {
+    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:el] UTF8String];
+    // Discard non-interactive items
+    if(!shouldTouch(el)) return;
+    curRects << rect;
 }
