@@ -55,26 +55,46 @@ static NSArray *getChildren(AXUIElementRef el) {
     return children;
 }
 
-static void walkTree(AXUIElementRef el) {
-    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:el] UTF8String];
+AccessibilityProxy::AccessibilityProxy(QObject *parent) :
+    QObject(parent), curRects()
+{
+    initAccessibility();
+}
+
+void AccessibilityProxy::update() {
+    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:sysEl] UTF8String];
+    AXUIElementRef win = getFocusedWin();
+    if(win == 0) qDebug() << "derp no window";
+
+    NSString *title = getProperty(win, NSAccessibilityTitleAttribute, @"");
+    qDebug() << [title UTF8String];
+
+    curRects.clear();
+    walkTree(win);
+    qDebug() << curRects;
+    emit newRects(curRects);
+}
+
+void AccessibilityProxy::walkTree(AXUIElementRef el) {
+    touch(el);
+
     NSArray *children = getChildren(el);
     for(id el in children) {
         walkTree((AXUIElementRef)el);
     }
 }
 
-AccessibilityProxy::AccessibilityProxy(QObject *parent) :
-    QObject(parent)
-{
-    initAccessibility();
-}
+void AccessibilityProxy::touch(AXUIElementRef el) {
+    // Discard non-interactive items
+    NSArray *actions = [UIElementUtilities actionNamesOfUIElement:el];
+    if(!actions || ![actions containsObject:@"AXPress"]) return;
 
-void AccessibilityProxy::testStuff() {
-    qDebug() << "testing";
-    AXUIElementRef win = getFocusedWin();
-    NSString *title = getProperty(win, NSAccessibilityTitleAttribute, @"");
-    qDebug() << [title UTF8String];
-    NSString *descript = [UIElementUtilities descriptionForUIElement:win attribute:NSAccessibilityChildrenAttribute beingVerbose:YES];
-    qDebug() << [descript UTF8String];
-    walkTree(win);
+//    qDebug() << [[UIElementUtilities stringDescriptionOfUIElement:el] UTF8String];
+
+    id rectVal = [UIElementUtilities valueOfAttribute:@"AXFrame" ofUIElement:el];
+    if(rectVal) {
+        CGRect rect;
+        AXValueGetValue((AXValueRef)rectVal, kAXValueCGRectType, &rect);
+        curRects << QRect(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+    }
 }

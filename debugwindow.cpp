@@ -8,7 +8,7 @@ DebugWindow::DebugWindow(AccessibilityProxy *prox) :
     ui(new Ui::DebugWindow), proxy(prox)
 {
     ui->setupUi(this);
-    QObject::connect(ui->testButton,SIGNAL(clicked()),proxy,SLOT(testStuff()));
+    QObject::connect(ui->testButton,SIGNAL(clicked()),proxy,SLOT(update()));
 }
 
 DebugWindow::~DebugWindow()

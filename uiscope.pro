@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui dbus
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,11 +14,13 @@ TEMPLATE = app
 LIBS += -framework Cocoa
 
 SOURCES += main.cpp\
-        debugwindow.cpp
+        debugwindow.cpp \
+    accessibilityproxyadapter.cpp
 
 HEADERS  += debugwindow.h \
     accessibilityproxy.h \
-    UIElementUtilities.h
+    UIElementUtilities.h \
+    accessibilityproxyadapter.h
 
 FORMS    += debugwindow.ui
 
