@@ -33,3 +33,10 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+
+# XCode
+
+Debug
+Info.plist
+*.build
+*.xcodeproj
